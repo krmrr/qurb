@@ -1,24 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Audio Viewer</title>
-    <link rel="stylesheet" href="viewer-style.css" />
+    <link rel="stylesheet" href="lib/bs.css"/>
+    <link rel="stylesheet" href="lib/line-awesome/css/line-awesome.css">
+    <link rel="stylesheet" href="viewer-style.css"/>
     <script src="axios.min.js"></script>
     <script src="viewer.js"></script>
-  </head>
-  <body>
-    <header>
-      <img src="logo.png" alt="Logo" />
-      <h1>QURB REHBER</h1>
-    </header>
+</head>
+<body>
 
-    <audio autoplay controls id="audio"></audio>
-    <button id="my-button">Yayına Dinle</button>
 
-    <footer>
-      <p>&copy; 2024 QURB | All Rights Reserved</p>
-    </footer>
-  </body>
+<div class="viewer-container mt-5">
+    <div class="container-sm">
+        <div>
+            <img src="image/qurb.gif" alt="QURB" class="sound_image img-fluid"/>
+        </div>
+        <audio autoplay controls id="audio"></audio>
+        <div class="controls">
+            <button class="button_s">
+                <i class="las la-volume-down"></i>
+            </button>
+            <button class="play button_s" id="my-button">
+                <i class="las la-play"></i>
+            </button>
+            <button class="button_s">
+                <i class="las la-volume-up"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 QURB | All Rights Reserved</p>
+</footer>
+
+
+<script>
+    const audio = document.getElementById('audio');
+
+
+</script>
+</body>
 </html>
