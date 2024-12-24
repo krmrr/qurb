@@ -63,7 +63,19 @@ app.post("/broadcast", async ({ body }, res) => {
     const peer = new webrtc.RTCPeerConnection({
       iceServers: [
         {
-          urls: "stun:192.168.4.1:3478", //stun:stun.stunprotocol.org
+          urls: "stun:192.168.4.1:3478", // STUN sunucu adresi
+        },
+      ],
+      encodings: [
+        {
+          payloadType: 111,
+          maxBitrate: 64000,
+          codecOptions: {
+            "opusStereo": "false", // Stereo'yu kapatarak mono ses iletilebilir
+            "opusFec": "false",    // FEC (Forward Error Correction) kullanımını kapatır
+            "opusDtx": "true",     // DTX (Discontinuous Transmission) kullanımı, sessizlikte veri gönderimi durdurur
+            "sampleRate": 32000,   // 32 kHz örnekleme hızı
+          },
         },
       ],
     });
