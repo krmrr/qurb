@@ -1,29 +1,26 @@
 window.onload = () => {
-  document.getElementById("my-button").onclick = () => {
-    init();
+  let isStreamActive = false; // Yayın durumunu kontrol etmek için flag
+  let peer = null; // Peer nesnesi için global bir değişken
+
+
+  const toggleStream = () => {
+    if (isStreamActive) {
+      stopStream();
+    } else {
+      init();
+    }
   };
 
-  const canvas = document.getElementById("siriCanvas");
-
-  // Eğer canvas öğesi mevcutsa, getContext metodunu çağır
-  if (canvas) {
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      console.error("Canvas context alınamadı.");
-    } else {
-      canvas.width = 200;
-      canvas.height = 200;
-      initCircles();
-    }
-  } else {
-    console.error("Canvas öğesi bulunamadı.");
-  }
-
-
+  document.getElementById("my-button").onclick = toggleStream;
 
   async function init() {
-    const peer = createPeer();
-    peer.addTransceiver("audio", { direction: "recvonly" }); // Only receive audio
+    if (peer) {
+      console.log("Zaten bir peer bağlantısı var.");
+      return; // Eğer peer zaten varsa, yeni bir bağlantı başlatma
+    }
+
+    peer = createPeer(); // Peer nesnesini başlat
+    peer.addTransceiver("audio", {direction: "recvonly"}); // Only receive audio
   }
 
   function createPeer() {
@@ -34,8 +31,10 @@ window.onload = () => {
         },
       ],
     });
+
     peer.ontrack = handleTrackEvent;
     peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
+    peer.onconnectionstatechange = () => handleConnectionStateChange(peer);
 
     return peer;
   }
@@ -47,17 +46,17 @@ window.onload = () => {
       sdp: peer.localDescription,
     };
 
-    const { data } = await axios.post("/consumer", payload);
+    const {data} = await axios.post("/consumer", payload);
+
     const desc = new RTCSessionDescription(data.sdp);
     peer.setRemoteDescription(desc).catch((e) => console.log(e));
-
   }
 
   function handleTrackEvent(e) {
     const audioElement = document.getElementById("audio");
     audioElement.srcObject = e.streams[0]; // Set stream to audio element
 
-
+    isStreamActive = true; // Yayın başladı
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
     const dataArray = new Uint8Array(256);
@@ -67,11 +66,23 @@ window.onload = () => {
     analyser.connect(audioContext.destination);
 
 
+    // Animasyonu başlat
     animate(analyser, dataArray);
+  }
 
+  function handleConnectionStateChange(peer) {
+    if (peer.connectionState === "disconnected" || peer.connectionState === "failed") {
+      stopStream(); // Yayın kesildi
+    }
   }
 
   function animate(analyser, dataArray) {
+    if (!isStreamActive) {
+      // Eğer yayın yoksa animasyonu durdur
+      document.getElementById("circle").style.transform = "scale(1) rotate(0deg)"; // Çemberi sıfırla
+      return; // Döngüyü sonlandır
+    }
+
     analyser.getByteFrequencyData(dataArray);
 
     // Sesin gücüne bağlı olarak yuvarlağı büyütme/küçültme
@@ -86,13 +97,14 @@ window.onload = () => {
     requestAnimationFrame(() => animate(analyser, dataArray));
   }
 
+  const canvas = document.getElementById("siriCanvas");
   const ctx = canvas.getContext("2d");
   canvas.width = 200;
   canvas.height = 200;
 
   let circles = [];
 
-// Siri benzeri ışık dalgaları oluştur
+  // Siri benzeri ışık dalgaları oluştur
   function createCircle() {
     return {
       x: canvas.width / 2,
@@ -105,7 +117,7 @@ window.onload = () => {
   }
 
   function initCircles() {
-    let circles = [];
+    circles = [];
     for (let i = 0; i < 6; i++) { // 6 ışıklı dalga
       circles.push(createCircle());
     }
@@ -128,47 +140,54 @@ window.onload = () => {
     });
   }
 
+  function stopStream() {
+    // Yayın yoksa durumunu güncelle
+    isStreamActive = false;
+    if (peer) {
+      peer.close(); // Peer bağlantısını kapat
+      peer = null; // Peer nesnesini sıfırla
+    }
+  }
+
   // Başlat
   initCircles();
   drawCircles();
 
+
+
 };
 
-
-let wakeLock = null;
 
 // Wake Lock'u etkinleştirme fonksiyonu
 async function requestWakeLock() {
   try {
-    // Sayfa görünürse Wake Lock'u talep et
-    if (document.visibilityState === "visible") {
-      wakeLock = await navigator.wakeLock.request("screen");
-      console.log("Wake Lock etkinleştirildi.");
+    wakeLock = await navigator.wakeLock.request("screen");
+    console.log("Wake Lock etkinleştirildi.");
 
-      // Wake Lock serbest bırakıldığında yeniden başlatmak için dinleyici
-      wakeLock.addEventListener("release", () => {
-        console.log("Wake Lock serbest bırakıldı. Yeniden talep ediliyor...");
-        requestWakeLock(); // Serbest bırakıldığında yeniden etkinleştir
-      });
-    }
+    // Wake Lock serbest bırakıldığında yeniden başlatmak için dinleyici
+    wakeLock.addEventListener("release", () => {
+      console.log("Wake Lock serbest bırakıldı. Yeniden talep ediliyor...");
+      requestWakeLock(); // Serbest bırakıldığında yeniden etkinleştir
+    });
   } catch (err) {
     console.error("Wake Lock etkinleştirilemedi:", err);
   }
 }
 
-// Sayfa görünürlüğü değiştiğinde kontrol
+let wakeLock = null;
+
+// Sayfa ilk yüklendiğinde Wake Lock'u etkinleştir
+if ("wakeLock" in navigator) {
+  requestWakeLock();
+} else {
+  console.warn("Wake Lock API bu tarayıcıda desteklenmiyor.");
+}
+
+// Tarayıcı sekmesi gizlendiğinde veya görünür olduğunda Wake Lock'u kontrol et
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    requestWakeLock(); // Sayfa görünürse yeniden talep et
-  } else if (wakeLock !== null) {
-    wakeLock.release(); // Sayfa gizlenirse Wake Lock'u serbest bırak
-    console.log("Wake Lock serbest bırakıldı çünkü sayfa görünür değil.");
-    wakeLock = null;
+  if (document.visibilityState === "visible" && !wakeLock) {
+    console.log("Sekme yeniden görünür oldu. Wake Lock talep ediliyor...");
+    requestWakeLock();
   }
 });
-
-// İlk başlatma
-requestWakeLock();
-
-
 
