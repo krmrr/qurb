@@ -19,6 +19,8 @@ window.onload = () => {
       return; // Eğer peer zaten varsa, yeni bir bağlantı başlatma
     }
 
+    document.getElementById("my-button").innerHTML = `<i class="las la-pause"></i>`;
+
     peer = createPeer(); // Peer nesnesini başlat
     peer.addTransceiver("audio", {direction: "recvonly"}); // Only receive audio
   }
@@ -144,6 +146,7 @@ window.onload = () => {
     // Yayın yoksa durumunu güncelle
     isStreamActive = false;
     if (peer) {
+      document.getElementById("my-button").innerHTML = `<i class="las la-play"></i>`;
       peer.close(); // Peer bağlantısını kapat
       peer = null; // Peer nesnesini sıfırla
     }
@@ -152,8 +155,6 @@ window.onload = () => {
   // Başlat
   initCircles();
   drawCircles();
-
-
 
 };
 
