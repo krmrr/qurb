@@ -9,15 +9,51 @@
     <link rel="stylesheet" href="viewer-style.css"/>
     <script src="axios.min.js"></script>
     <script src="viewer.js"></script>
+    <style>
+        .circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.8) 60%, rgba(0, 0, 0, 0.3));
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+            transform: scale(1) rotate(0deg);
+            transition: transform 0.1s ease-in-out;
+        }
+
+        canvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            justify-self: center;
+            text-align: -webkit-center;
+        }
+
+        .circle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body>
 
 
 <div class="viewer-container mt-5">
     <div class="container-sm">
-        <div>
-            <img src="image/qurb.gif" alt="QURB" class="sound_image img-fluid"/>
+        <div class="circle-container">
+            <div class="circle" id="circle">
+                <canvas id="siriCanvas"></canvas>
+            </div>
         </div>
+
         <audio autoplay controls id="audio"></audio>
         <div class="controls">
             <button class="button_s">
@@ -37,11 +73,5 @@
     <p>&copy; 2024 QURB | All Rights Reserved</p>
 </footer>
 
-
-<script>
-    const audio = document.getElementById('audio');
-
-
-</script>
 </body>
 </html>

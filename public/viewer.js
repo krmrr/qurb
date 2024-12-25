@@ -2,39 +2,173 @@ window.onload = () => {
   document.getElementById("my-button").onclick = () => {
     init();
   };
+
+  const canvas = document.getElementById("siriCanvas");
+
+  // Eğer canvas öğesi mevcutsa, getContext metodunu çağır
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      console.error("Canvas context alınamadı.");
+    } else {
+      canvas.width = 200;
+      canvas.height = 200;
+      initCircles();
+    }
+  } else {
+    console.error("Canvas öğesi bulunamadı.");
+  }
+
+
+
+  async function init() {
+    const peer = createPeer();
+    peer.addTransceiver("audio", { direction: "recvonly" }); // Only receive audio
+  }
+
+  function createPeer() {
+    const peer = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: "stun:192.168.4.1:3478",
+        },
+      ],
+    });
+    peer.ontrack = handleTrackEvent;
+    peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
+
+    return peer;
+  }
+
+  async function handleNegotiationNeededEvent(peer) {
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    const payload = {
+      sdp: peer.localDescription,
+    };
+
+    const { data } = await axios.post("/consumer", payload);
+    const desc = new RTCSessionDescription(data.sdp);
+    peer.setRemoteDescription(desc).catch((e) => console.log(e));
+
+  }
+
+  function handleTrackEvent(e) {
+    const audioElement = document.getElementById("audio");
+    audioElement.srcObject = e.streams[0]; // Set stream to audio element
+
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    const dataArray = new Uint8Array(256);
+
+    const sourceNode = audioContext.createMediaStreamSource(e.streams[0]);
+    sourceNode.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+
+    animate(analyser, dataArray);
+
+  }
+
+  function animate(analyser, dataArray) {
+    analyser.getByteFrequencyData(dataArray);
+
+    // Sesin gücüne bağlı olarak yuvarlağı büyütme/küçültme
+    const averageFrequency = dataArray.reduce((a, b) => a + b) / dataArray.length;
+    const scale = 1 + averageFrequency / 128; // Ses şiddetiyle scale değeri belir
+
+    // Çemberin büyüyüp küçülmesi ve dönmesi
+    const rotation = averageFrequency * 0.1; // Sesin şiddetine göre dönüş açısı
+    document.getElementById("circle").style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+    // Dalgaları çiz
+    drawCircles();
+    requestAnimationFrame(() => animate(analyser, dataArray));
+  }
+
+  const ctx = canvas.getContext("2d");
+  canvas.width = 200;
+  canvas.height = 200;
+
+  let circles = [];
+
+// Siri benzeri ışık dalgaları oluştur
+  function createCircle() {
+    return {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: Math.random() * 15 + 35, // Yarıçapı küçültmek için 50 yerine 35 ile 50 arasında ayarladım
+      color: `hsla(${Math.random() * 360}, 100%, 50%, 0.6)`,
+      angle: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.05 + 0.02
+    };
+  }
+
+  function initCircles() {
+    let circles = [];
+    for (let i = 0; i < 6; i++) { // 6 ışıklı dalga
+      circles.push(createCircle());
+    }
+  }
+
+  function drawCircles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.globalCompositeOperation = "lighter"; // Renkleri karıştır
+    circles.forEach((circle) => {
+      circle.angle += circle.speed;
+
+      const offsetX = Math.cos(circle.angle) * 30;
+      const offsetY = Math.sin(circle.angle) * 30;
+
+      ctx.beginPath();
+      ctx.arc(circle.x + offsetX, circle.y + offsetY, circle.radius, 0, Math.PI * 2);
+      ctx.fillStyle = circle.color;
+      ctx.fill();
+    });
+  }
+
+  // Başlat
+  initCircles();
+  drawCircles();
+
 };
 
-async function init() {
-  const peer = createPeer();
-  peer.addTransceiver("audio", { direction: "recvonly" }); // Only receive audio
+
+let wakeLock = null;
+
+// Wake Lock'u etkinleştirme fonksiyonu
+async function requestWakeLock() {
+  try {
+    // Sayfa görünürse Wake Lock'u talep et
+    if (document.visibilityState === "visible") {
+      wakeLock = await navigator.wakeLock.request("screen");
+      console.log("Wake Lock etkinleştirildi.");
+
+      // Wake Lock serbest bırakıldığında yeniden başlatmak için dinleyici
+      wakeLock.addEventListener("release", () => {
+        console.log("Wake Lock serbest bırakıldı. Yeniden talep ediliyor...");
+        requestWakeLock(); // Serbest bırakıldığında yeniden etkinleştir
+      });
+    }
+  } catch (err) {
+    console.error("Wake Lock etkinleştirilemedi:", err);
+  }
 }
 
-function createPeer() {
-  const peer = new RTCPeerConnection({
-    iceServers: [
-      {
-        urls: "stun:192.168.4.1:3478",
-      },
-    ],
-  });
-  peer.ontrack = handleTrackEvent;
-  peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
+// Sayfa görünürlüğü değiştiğinde kontrol
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    requestWakeLock(); // Sayfa görünürse yeniden talep et
+  } else if (wakeLock !== null) {
+    wakeLock.release(); // Sayfa gizlenirse Wake Lock'u serbest bırak
+    console.log("Wake Lock serbest bırakıldı çünkü sayfa görünür değil.");
+    wakeLock = null;
+  }
+});
 
-  return peer;
-}
+// İlk başlatma
+requestWakeLock();
 
-async function handleNegotiationNeededEvent(peer) {
-  const offer = await peer.createOffer();
-  await peer.setLocalDescription(offer);
-  const payload = {
-    sdp: peer.localDescription,
-  };
 
-  const { data } = await axios.post("/consumer", payload);
-  const desc = new RTCSessionDescription(data.sdp);
-  peer.setRemoteDescription(desc).catch((e) => console.log(e));
-}
 
-function handleTrackEvent(e) {
-  document.getElementById("audio").srcObject = e.streams[0]; // Set stream to audio element
-}
