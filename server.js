@@ -1,4 +1,5 @@
 const https = require("https");
+const http = require("http");
 const fs = require("fs");
 const express = require("express");
 const app = express();
@@ -19,13 +20,15 @@ app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
+// HTTP üzerinden gelen istekler için
+const httpApp = express();
+httpApp.get("/", (req, res) => {
   res.render("index"); // views/index.ejs dosyasını render eder
 });
 
-// Dinleyici sayfası rotası
+// HTTPS üzerinden çalışan rotalar
 app.get("/rehber", (req, res) => {
-  res.render("rehber"); // views/viewer.ejs dosyasını render eder
+  res.render("rehber"); // views/rehber.ejs dosyasını render eder
 });
 
 app.post("/consumer", async ({ body }, res) => {
@@ -33,7 +36,7 @@ app.post("/consumer", async ({ body }, res) => {
     const peer = new webrtc.RTCPeerConnection({
       iceServers: [
         {
-          urls: "stun:127.0.0.1:3478", //stun:stun.stunprotocol.org
+          urls: "stun:127.0.0.1:3478", // STUN sunucu adresi
         },
       ],
     });
@@ -41,8 +44,8 @@ app.post("/consumer", async ({ body }, res) => {
     await peer.setRemoteDescription(desc);
 
     senderStream
-      .getTracks()
-      .forEach((track) => peer.addTrack(track, senderStream));
+        .getTracks()
+        .forEach((track) => peer.addTrack(track, senderStream));
 
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
@@ -107,8 +110,12 @@ function handleTrackEvent(e, peer) {
   }
 }
 
+// HTTPS Sunucusu
 https.createServer(options, app).listen(3000, () => {
-  console.log("HTTPS sunucusu çalışıyor: https://192.168.4.1");
+  console.log("Rehber sunucusu çalışıyor: https://192.168.4.1:3000");
 });
 
-//app.listen(3000, () => console.log("server started"));
+// HTTP Sunucusu
+http.createServer(httpApp).listen(8080, () => {
+  console.log("Dinleyici sunucusu çalışıyor: http://192.168.4.1:8080");
+});
