@@ -5,6 +5,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const webrtc = require("wrtc");
+const cors = require("cors");
 
 let senderStream;
 
@@ -28,6 +29,9 @@ httpApp.use(express.static(__dirname + "/public"));
 httpApp.get("/", (req, res) => {
   res.render("index"); // views/index.ejs dosyasını render eder
 });
+
+app.use(cors());
+httpApp.use(cors());
 
 // HTTPS üzerinden çalışan rotalar
 app.get("/rehber", (req, res) => {
