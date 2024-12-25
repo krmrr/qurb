@@ -22,6 +22,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // HTTP üzerinden gelen istekler için
 const httpApp = express();
+httpApp.set("view engine", "ejs"); // EJS'yi view engine olarak ayarlayın
+httpApp.set("views", __dirname + "/views"); // views klasörünü ayarla
+httpApp.use(express.static(__dirname + "/public"));
 httpApp.get("/", (req, res) => {
   res.render("index"); // views/index.ejs dosyasını render eder
 });
