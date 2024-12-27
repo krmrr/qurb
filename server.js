@@ -1,6 +1,5 @@
 const https = require("https");
 const http = require("http");
-const fs = require("fs");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
@@ -41,6 +40,17 @@ app.get("/broadcast", (req, res) => {
     res.render("rehber"); // views/rehber.ejs dosyasını render eder
 });
 
+function readPinFile(pinFilePath, callback) {
+    fs.readFile(pinFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error("Error reading PIN file:", err); // Hata varsa logla
+            return callback(err, null); // Hata varsa callback ile döner
+        }
+        callback(null, data);
+    });
+}
+
+
 app.get("/check-pin", (req, res) => {
     const userPin = req.query.pin; // URL query parametre olarak gönderilen PIN
     console.log("Received PIN:", userPin); // Gelen PIN'i logla
@@ -49,16 +59,16 @@ app.get("/check-pin", (req, res) => {
     const pinFilePath = path.join("/home", "ubuntu", "wifi_port_manager", "pin.json");
     console.log("Reading PIN file from:", pinFilePath); // Pin dosyasının yolunu logla
 
-    fs.readFile(pinFilePath, "utf8", (err, data) => {
+    // PIN dosyasını callback yöntemiyle oku
+    readPinFile(pinFilePath, (err, data) => {
         if (err) {
-            console.error("Error reading PIN file:", err); // Hata varsa logla
             return res.status(500).json({valid: false, message: "Error reading pin file"});
         }
 
         console.log("PIN file contents:", data); // Dosyanın içeriğini logla
 
         try {
-            const pinData = JSON.parse(data);
+            const pinData = JSON.parse(data); // JSON verisini parse et
             console.log("Parsed PIN data:", pinData); // Parse edilen veriyi logla
 
             // PIN kontrolü
@@ -70,7 +80,7 @@ app.get("/check-pin", (req, res) => {
                 res.json({valid: false});
             }
         } catch (parseError) {
-            console.error("Error parsing PIN data:", parseError); // Parse hatası varsa logla
+            console.error("Error parsing PIN data:", parseError); // JSON parse hatası
             return res.status(500).json({valid: false, message: "Error parsing pin data"});
         }
     });
