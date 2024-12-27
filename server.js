@@ -3,6 +3,7 @@ const http = require("http");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const fs = require('fs');
 const webrtc = require("wrtc");
 const cors = require("cors");
 const path = require("path");
