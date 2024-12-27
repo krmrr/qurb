@@ -43,27 +43,39 @@ app.get("/broadcast", (req, res) => {
 
 app.get("/check-pin", (req, res) => {
     const userPin = req.query.pin; // URL query parametre olarak gönderilen PIN
+    console.log("Received PIN:", userPin); // Gelen PIN'i logla
 
-    // Pin dosyasını oku
-    //const pinFilePath = path.join("/ubuntu", "wifi_port_manager", "pin.json");
+    // Pin dosyasının yolu
     const pinFilePath = path.join("/home", "ubuntu", "wifi_port_manager", "pin.json");
-
+    console.log("Reading PIN file from:", pinFilePath); // Pin dosyasının yolunu logla
 
     fs.readFile(pinFilePath, "utf8", (err, data) => {
         if (err) {
+            console.error("Error reading PIN file:", err); // Hata varsa logla
             return res.status(500).json({valid: false, message: "Error reading pin file"});
         }
 
-        const pinData = JSON.parse(data);
+        console.log("PIN file contents:", data); // Dosyanın içeriğini logla
 
-        // PIN kontrolü
-        if (pinData.pin.toString() === userPin) {
-            res.json({valid: true});
-        } else {
-            res.json({valid: false});
+        try {
+            const pinData = JSON.parse(data);
+            console.log("Parsed PIN data:", pinData); // Parse edilen veriyi logla
+
+            // PIN kontrolü
+            if (pinData.pin.toString() === userPin) {
+                console.log("PIN is valid."); // PIN doğruysa logla
+                res.json({valid: true});
+            } else {
+                console.log("Invalid PIN."); // PIN yanlışsa logla
+                res.json({valid: false});
+            }
+        } catch (parseError) {
+            console.error("Error parsing PIN data:", parseError); // Parse hatası varsa logla
+            return res.status(500).json({valid: false, message: "Error parsing pin data"});
         }
     });
 });
+
 
 app.post("/consumer", async ({body}, res) => {
     try {
