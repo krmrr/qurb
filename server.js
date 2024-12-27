@@ -8,6 +8,9 @@ const cors = require("cors");
 const path = require("path");
 const fs = require('fs');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+
 let senderStream;
 const ADMIN_PIN = 6192;
 
@@ -39,7 +42,6 @@ httpApp.use(cors());
 app.get("/broadcast", (req, res) => {
     res.render("rehber"); // views/rehber.ejs dosyasını render eder
 });
-
 
 app.get("/check-pin", (req, res) => {
     const userPin = req.query.pin; // URL query parametre olarak gönderilen PIN
