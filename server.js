@@ -1,11 +1,9 @@
 const https = require("https");
-const http = require("http");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const webrtc = require("wrtc");
 const cors = require("cors");
-const path = require("path");
 const fs = require('fs');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -24,24 +22,20 @@ app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-// HTTP üzerinden gelen istekler için
-const httpApp = express();
-httpApp.set("view engine", "ejs"); // EJS'yi view engine olarak ayarlayın
-httpApp.set("views", __dirname + "/views"); // views klasörünü ayarla
-httpApp.use(express.static(__dirname + "/public"));
-httpApp.get("/", (req, res) => {
+
+
+app.get("/", (req, res) => {
     res.render("index"); // views/index.ejs dosyasını render eder
 });
 
 app.use(cors());
-httpApp.use(cors());
 
 // HTTPS üzerinden çalışan rotalar
 app.get("/broadcast", (req, res) => {
     res.render("rehber"); // views/rehber.ejs dosyasını render eder
 });
 
-httpApp.get("/check-pin", (req, res) => {
+app.get("/check-pin", (req, res) => {
     const userPin = req.query.pin; // URL query parametre olarak gönderilen PIN
     console.log("Received PIN:", userPin); // Gelen PIN'i logla
 
@@ -155,9 +149,4 @@ function handleTrackEvent(e, peer) {
 // HTTPS Sunucusu
 https.createServer(options, app).listen(3000, () => {
     console.log("Rehber sunucusu çalışıyor: https://192.168.4.1:3000");
-});
-
-// HTTP Sunucusu
-http.createServer(httpApp).listen(8080, () => {
-    console.log("Dinleyici sunucusu çalışıyor: http://192.168.4.1:8080");
 });
