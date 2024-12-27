@@ -88,7 +88,7 @@ window.onload = () => {
             sdp: peer.localDescription,
         };
 
-        const {data} = await axios.post("/consumer", payload);
+        const {data} = await axios.post("http://192.168.4.1:8080/consumer", payload);
 
         const desc = new RTCSessionDescription(data.sdp);
         peer.setRemoteDescription(desc).catch((e) => console.log(e));
