@@ -88,7 +88,7 @@ window.onload = () => {
             sdp: peer.localDescription,
         };
 
-        const {data} = await axios.post("http://live.qurb:8080/consumer", payload);
+        const {data} = await axios.post("https://live.qurb:3000/consumer", payload);
 
         const desc = new RTCSessionDescription(data.sdp);
         peer.setRemoteDescription(desc).catch((e) => console.log(e));
