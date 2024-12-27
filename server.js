@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const webrtc = require("wrtc");
 const cors = require("cors");
 const path = require("path");
-//const pinFilePath = "/home/ubuntu/wifi_port_manager/pin.json";
+const fs = require('fs');
 
 let senderStream;
 const ADMIN_PIN = 6192;
