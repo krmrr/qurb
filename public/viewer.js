@@ -24,8 +24,12 @@ function checkPin() {
             }
         })
         .catch(error => {
-            console.error("Error verifying PIN:", error);
-            alert("Error verifying PIN.");
+            console.error("Error verifying PIN:", error.response);
+
+            const errorMessage = error.response ? error.response.data : error.message;
+            alert("Error verifying PIN: " + errorMessage);
+
+            alert("Error verifying PIN." + errorMessage);
         });
 }
 
