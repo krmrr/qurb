@@ -6,8 +6,8 @@ const app = express();
 const bodyParser = require("body-parser");
 const webrtc = require("wrtc");
 const cors = require("cors");
-//const path = require("path");
-const pinFilePath = "/home/ubuntu/wifi_port_manager/pin.json";
+const path = require("path");
+//const pinFilePath = "/home/ubuntu/wifi_port_manager/pin.json";
 
 let senderStream;
 const ADMIN_PIN = 6192;
@@ -46,7 +46,7 @@ app.get("/check-pin", (req, res) => {
 
     // Pin dosyasını oku
     //const pinFilePath = path.join("/ubuntu", "wifi_port_manager", "pin.json");
-    //const pinFilePath = path.join("/home", "ubuntu", "wifi_port_manager", "pin.json");
+    const pinFilePath = path.join("/home", "ubuntu", "wifi_port_manager", "pin.json");
 
 
     fs.readFile(pinFilePath, "utf8", (err, data) => {
