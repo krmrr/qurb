@@ -3,7 +3,6 @@ const http = require("http");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const fs = require('fs');
 const webrtc = require("wrtc");
 const cors = require("cors");
 const path = require("path");
@@ -41,50 +40,35 @@ app.get("/broadcast", (req, res) => {
     res.render("rehber"); // views/rehber.ejs dosyasını render eder
 });
 
-function readPinFile(pinFilePath, callback) {
-    fs.readFile(pinFilePath, 'utf8', (err, data) => {
-        if (err) {
-            console.error("Error reading PIN file:", err); // Hata varsa logla
-            return callback(err, null); // Hata varsa callback ile döner
-        }
-        callback(null, data);
-    });
-}
-
 
 app.get("/check-pin", (req, res) => {
     const userPin = req.query.pin; // URL query parametre olarak gönderilen PIN
     console.log("Received PIN:", userPin); // Gelen PIN'i logla
 
-    // Pin dosyasının yolu
-    const pinFilePath = path.join("/home", "ubuntu", "wifi_port_manager", "pin.json");
+    // Pin dosyasının yolu manuel olarak verildi
+    const pinFilePath = "/home/ubuntu/wifi_port_manager/pin.json"; // Manuel dosya yolu
     console.log("Reading PIN file from:", pinFilePath); // Pin dosyasının yolunu logla
 
-    // PIN dosyasını callback yöntemiyle oku
-    readPinFile(pinFilePath, (err, data) => {
-        if (err) {
-            return res.status(500).json({valid: false, message: "Error reading pin file"});
-        }
-
+    try {
+        // PIN dosyasını senkron şekilde oku
+        const data = fs.readFileSync(pinFilePath, 'utf8');
         console.log("PIN file contents:", data); // Dosyanın içeriğini logla
 
-        try {
-            const pinData = JSON.parse(data); // JSON verisini parse et
-            console.log("Parsed PIN data:", pinData); // Parse edilen veriyi logla
+        const pinData = JSON.parse(data); // JSON verisini parse et
+        console.log("Parsed PIN data:", pinData); // Parse edilen veriyi logla
 
-            // PIN kontrolü
-            if (pinData.pin.toString() === userPin) {
-                console.log("PIN is valid."); // PIN doğruysa logla
-                res.json({valid: true});
-            } else {
-                console.log("Invalid PIN."); // PIN yanlışsa logla
-                res.json({valid: false});
-            }
-        } catch (parseError) {
-            console.error("Error parsing PIN data:", parseError); // JSON parse hatası
-            return res.status(500).json({valid: false, message: "Error parsing pin data"});
+        // PIN kontrolü
+        if (pinData.pin.toString() === userPin) {
+            console.log("PIN is valid."); // PIN doğruysa logla
+            res.json({valid: true});
+        } else {
+            console.log("Invalid PIN."); // PIN yanlışsa logla
+            res.json({valid: false});
         }
-    });
+    } catch (err) {
+        console.error("Error reading or parsing PIN file:", err); // Hata varsa logla
+        return res.status(500).json({valid: false, message: "Error reading or parsing pin file"});
+    }
 });
 
 
