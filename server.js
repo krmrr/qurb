@@ -72,7 +72,7 @@ httpApp.get("/check-pin", (req, res) => {
 });
 
 
-app.post("/consumer", async ({body}, res) => {
+httpApp.post("/consumer", async ({body}, res) => {
     try {
         const peer = new webrtc.RTCPeerConnection({
             iceServers: [
