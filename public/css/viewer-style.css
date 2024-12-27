@@ -9,7 +9,6 @@ html,
 body {
   height: 100%;
   font-family: monospace, sans-serif;
-
 }
 
 body {
@@ -26,13 +25,6 @@ header {
   align-items: center;
   margin-top: 20px;
   margin-bottom: 20px;
-}
-
-header img {
-  height: 50px;
-  width: 50px;
-  border-radius: 50%;
-  margin-right: 15px;
 }
 
 header h1 {
@@ -113,6 +105,45 @@ footer p {
   border: none;
   background: transparent;
   color: white;
+}
+
+.circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.8) 60%, rgba(0, 0, 0, 0.3));
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  transform: scale(1) rotate(0deg);
+  transition: transform 0.1s ease-in-out;
+}
+
+canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  justify-self: center;
+  text-align: -webkit-center;
+}
+
+.circle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  width: 60px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
 }
 
 

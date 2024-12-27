@@ -3,54 +3,23 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Audio Viewer</title>
+    <title>QURB Audio Viewer</title>
     <link rel="stylesheet" href="lib/bs.css"/>
     <link rel="stylesheet" href="lib/line-awesome/css/line-awesome.css">
-    <link rel="stylesheet" href="viewer-style.css"/>
-    <script src="axios.min.js"></script>
+    <link rel="stylesheet" href="css/viewer-style.css"/>
+    <script src="lib/axios.min.js"></script>
     <script src="viewer.js"></script>
-    <style>
-        .circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(0, 0, 0, 0.8) 60%, rgba(0, 0, 0, 0.3));
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
-            overflow: hidden;
-            transform: scale(1) rotate(0deg);
-            transition: transform 0.1s ease-in-out;
-        }
-
-        canvas {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
-            justify-self: center;
-            text-align: -webkit-center;
-        }
-
-        .circle-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
 </head>
 <body>
 
+<header>
+    <img src="logo.png" class="logo" alt="Logo"/>
+</header>
 
 <div class="viewer-container mt-5">
     <div class="container-sm">
         <div class="circle-container">
             <div class="circle" id="circle">
-                <img style="width: 80px;" src="logo.png" alt=""/>
                 <canvas id="siriCanvas"></canvas>
             </div>
         </div>

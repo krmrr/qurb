@@ -1,0 +1,81 @@
+body {
+  margin: 0;
+  height: 85vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0e1c35;
+  color: white;
+  font-family: Arial, sans-serif;
+  transition: background-color 1s ease;
+}
+
+.microphone-button {
+  width: 150px;
+  height: 150px;
+  background-color: #1e1e1e;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.microphone-button:hover {
+  background-color: #272727;
+}
+
+.microphone-button:active {
+  transform: scale(0.95);
+}
+
+.microphone-icon {
+  font-size: 70px;
+  color: #ff4bcb;
+  transition: color 0.3s;
+}
+
+.microphone-button.active .microphone-icon {
+  color: #4bff78;
+}
+
+.close-icon {
+  font-size: 40px;
+  color: #ff4bcb;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+
+.microphone-button:not(.active) .close-icon {
+  display: block;
+}
+
+/* Footer stili */
+footer {
+  width: 100%;
+  text-align: center;
+  background-color: #0f0f0f;
+  color: #fff;
+  font-size: 0.9em;
+  padding: 10px;
+  position: fixed;
+  bottom: 0;
+}
+
+footer p {
+  margin: 0;
+}
+
+.logo {
+  width: 60px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}

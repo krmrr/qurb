@@ -3,8 +3,6 @@ let peer; // Global değişken olarak tanımlandı
 
 window.onload = () => {
   const button = document.getElementById("my-button");
-  const recButton = document.getElementById("rec-button");
-  const statusMessage = document.getElementById("status-message");
   let isStreaming = false;
 
   button.onclick = async () => {
@@ -19,27 +17,14 @@ window.onload = () => {
     }
   };
 
-  recButton.onclick = async () => {
-    if (!isStreaming) {
-    } else {
-      stopStream(); // Yayını durdur
-      isStreaming = false;
-      updateUI();
-    }
-  };
 
   function updateUI() {
     if (isStreaming) {
-      button.style.display = "none";
-      button.textContent = "";
-      recButton.style.display = "block";
-      statusMessage.style.display = "block";
-      statusMessage.textContent = "Yayın Yapılıyor";
+      button.classList.toggle('active');
+      document.body.style.backgroundColor = "#4ea525"
     } else {
-      button.style.display = "block";
-      recButton.style.display = "none";
-      button.textContent = "Yayını Başlat";
-      statusMessage.style.display = "none";
+      button.classList.toggle('active');
+      document.body.style.backgroundColor = "#d63232"
     }
   }
 };

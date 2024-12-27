@@ -6,8 +6,10 @@ const app = express();
 const bodyParser = require("body-parser");
 const webrtc = require("wrtc");
 const cors = require("cors");
+const path = require("path");
 
 let senderStream;
+const ADMIN_PIN = 6192;
 
 const options = {
   key: fs.readFileSync("192.168.4.1-key.pem"),
@@ -34,8 +36,31 @@ app.use(cors());
 httpApp.use(cors());
 
 // HTTPS üzerinden çalışan rotalar
-app.get("/rehber", (req, res) => {
+app.get("/broadcast", (req, res) => {
   res.render("rehber"); // views/rehber.ejs dosyasını render eder
+});
+
+app.get("/check-pin", (req, res) => {
+  const userPin = req.query.pin; // URL query parametre olarak gönderilen PIN
+
+  // Pin dosyasını oku
+  const pinFilePath = path.join("/Users/omrkrmr", "wifi_port_manager", "pin.json");
+
+
+  fs.readFile(pinFilePath, "utf8", (err, data) => {
+    if (err) {
+      return res.status(500).json({ valid: false, message: "Error reading pin file" });
+    }
+
+    const pinData = JSON.parse(data);
+
+    // PIN kontrolü
+    if (pinData.pin.toString() === userPin) {
+      res.json({ valid: true });
+    } else {
+      res.json({ valid: false });
+    }
+  });
 });
 
 app.post("/consumer", async ({ body }, res) => {
@@ -108,6 +133,8 @@ app.post("/broadcast", async ({ body }, res) => {
     res.status(500).json({ error: "Failed to create broadcast connection." });
   }
 });
+
+
 
 function handleTrackEvent(e, peer) {
   try {
