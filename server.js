@@ -44,7 +44,8 @@ app.get("/check-pin", (req, res) => {
   const userPin = req.query.pin; // URL query parametre olarak gönderilen PIN
 
   // Pin dosyasını oku
-  const pinFilePath = path.join("/Users/omrkrmr", "wifi_port_manager", "pin.json");
+  //const pinFilePath = path.join("/ubuntu", "wifi_port_manager", "pin.json");
+  const pinFilePath = path.join("/home", "ubuntu", "wifi_port_manager", "pin.json");
 
 
   fs.readFile(pinFilePath, "utf8", (err, data) => {
