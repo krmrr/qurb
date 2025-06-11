@@ -158,3 +158,15 @@ canvas {
     font-size: 0.9em;
   }
 }
+
+.button_s:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.button_s.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

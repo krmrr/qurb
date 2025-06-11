@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const webrtc = require("wrtc");
 const cors = require("cors");
 const fs = require('fs');
+const Gpio = require('onoff').Gpio;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -22,7 +23,9 @@ app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-
+const greenLed = new Gpio(20, 'out');
+const blueLed = new Gpio(21, 'out');
+const redLed = new Gpio(19, 'out');
 
 app.get("/", (req, res) => {
     res.render("index"); // views/index.ejs dosyasını render eder
@@ -137,6 +140,12 @@ app.post("/broadcast", async ({body}, res) => {
     }
 });
 
+app.get("/broadcast-status", (req, res) => {
+
+    const isActive = senderStream && senderStream.active && senderStream.getTracks().length > 0;
+    res.json({ isActive: isActive });
+});
+
 
 function handleTrackEvent(e, peer) {
     try {
@@ -149,4 +158,20 @@ function handleTrackEvent(e, peer) {
 // HTTPS Sunucusu
 https.createServer(options, app).listen(3000, () => {
     console.log("Rehber sunucusu çalışıyor: https://192.168.4.1:3000");
+
+    // Açılış Işığı
+    greenLed.writeSync(1);
+
+    setTimeout(() => {
+        greenLed.writeSync(0);
+    },1500);
+
+    setTimeout(() => {
+        greenLed.writeSync(1);
+    },2500);
+
+    setTimeout(() => {
+        greenLed.writeSync(0);
+    },3500);
+
 });
