@@ -44,7 +44,7 @@ function createPeer() {
     ],
   });
   peerConnection.onnegotiationneeded = () =>
-    handleNegotiationNeededEvent(peerConnection);
+      handleNegotiationNeededEvent(peerConnection);
 
   return peerConnection;
 }
