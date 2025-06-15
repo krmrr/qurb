@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const webrtc = require("wrtc");
 const cors = require("cors");
 const fs = require('fs');
-const Gpio = require('onoff').Gpio;
+
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -22,8 +22,6 @@ app.use(express.static(__dirname + "/public"));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-
-const greenLed = new Gpio(20, 'out');
 
 
 app.get("/", (req, res) => {
@@ -151,15 +149,4 @@ function handleTrackEvent(e, peer) {
 // HTTPS Sunucusu
 https.createServer(options, app).listen(3000, () => {
     console.log("Rehber sunucusu çalışıyor: https://192.168.4.1:3000");
-
-    greenLed.writeSync(1);
-
-    setTimeout(() => {
-        greenLed.writeSync(0);
-    },1000);
-
-    setTimeout(() => {
-        greenLed.writeSync(1);
-    },2000);
-
 });
