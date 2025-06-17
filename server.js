@@ -9,7 +9,10 @@ const fs = require('fs');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-let senderStream;
+let senderStream = null;
+let senderPeer = null;
+
+const consumers = new Set();
 
 const options = {
     key: fs.readFileSync("192.168.4.1-key.pem"),
@@ -66,34 +69,50 @@ app.get("/check-pin", (req, res) => {
 });
 
 
-app.post("/consumer", async ({body}, res) => {
-    try {
-        const peer = new webrtc.RTCPeerConnection({
-            iceServers: [
-                {
-                    urls: "stun:127.0.0.1:3478", // STUN sunucu adresi
-                },
-            ],
-        });
-        const desc = new webrtc.RTCSessionDescription(body.sdp);
-        await peer.setRemoteDescription(desc);
+app.post("/consumer", async ({ body }, res) => {
+  try {
+    const peer = new webrtc.RTCPeerConnection({
+      iceServers: [
+        {
+          urls: "stun:127.0.0.1:3478",
+        },
+      ],
+    });
 
-        senderStream
-            .getTracks()
-            .forEach((track) => peer.addTrack(track, senderStream));
+    const desc = new webrtc.RTCSessionDescription(body.sdp);
+    await peer.setRemoteDescription(desc);
 
-        const answer = await peer.createAnswer();
-        await peer.setLocalDescription(answer);
+    senderStream
+      .getTracks()
+      .forEach((track) => peer.addTrack(track, senderStream));
 
-        const payload = {
-            sdp: peer.localDescription,
-        };
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
 
-        res.json(payload);
-    } catch (error) {
-        console.error("Error in /consumer:", error);
-        res.status(500).json({error: "Failed to create consumer connection."});
-    }
+    // Yeni consumer'ı set'e ekle
+    consumers.add(peer);
+
+    // Bağlantı kapandığında veya sorun yaşandığında set'ten çıkar
+    peer.onconnectionstatechange = () => {
+      if (
+        peer.connectionState === "closed" ||
+        peer.connectionState === "failed" ||
+        peer.connectionState === "disconnected"
+      ) {
+        consumers.delete(peer);
+        console.log("Consumer bağlantısı kapandı, güncel sayi:", consumers.size);
+      }
+    };
+
+    const payload = {
+      sdp: peer.localDescription,
+    };
+
+    res.json(payload);
+  } catch (error) {
+    console.error("Error in /consumer:", error);
+    res.status(500).json({ error: "Failed to create consumer connection." });
+  }
 });
 
 app.post("/broadcast", async ({body}, res) => {
@@ -137,15 +156,6 @@ app.post("/broadcast", async ({body}, res) => {
     }
 });
 
-
-function handleTrackEvent(e, peer) {
-    try {
-        senderStream = e.streams[0];
-    } catch (error) {
-        console.error("Error in handleTrackEvent:", error);
-    }
-}
-
 app.get("/broadcast-status", (req, res) => {
     if (senderStream && senderStream.active) {
         res.json({ broadcasting: true });
@@ -155,7 +165,29 @@ app.get("/broadcast-status", (req, res) => {
 });
 
 
+app.post("/stop-broadcast", (req, res) => {
+  try {
+    if (senderStream) {
+      senderStream.getTracks().forEach(track => track.stop());
+      senderStream = null;
+      console.log("Yayın durduruldu.");
+      return res.json({ success: true, message: "Yayın durduruldu." });
+    } else {
+      return res.json({ success: false, message: "Yayın zaten aktif değil." });
+    }
+  } catch (error) {
+    console.error("Yayın durdurma hatası:", error);
+    return res.status(500).json({ success: false, message: "Yayın durdurulamadı." });
+  }
+});
 
+function handleTrackEvent(e, peer) {
+    try {
+        senderStream = e.streams[0];
+    } catch (error) {
+        console.error("Error in handleTrackEvent:", error);
+    }
+}
 
 
 // HTTPS Sunucusu
