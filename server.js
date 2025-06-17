@@ -146,6 +146,18 @@ function handleTrackEvent(e, peer) {
     }
 }
 
+app.get("/broadcast-status", (req, res) => {
+    if (senderStream && senderStream.active) {
+        res.json({ broadcasting: true });
+    } else {
+        res.json({ broadcasting: false });
+    }
+});
+
+
+
+
+
 // HTTPS Sunucusu
 https.createServer(options, app).listen(3000, () => {
     console.log("Rehber sunucusu çalışıyor: https://192.168.4.1:3000");
